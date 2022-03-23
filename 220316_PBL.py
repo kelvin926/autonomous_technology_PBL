@@ -68,7 +68,7 @@ X = T(10)
 X(5)
 print(X(5))
 '''
-
+'''
 def xrange(n):
     step = 0.1
     r = 0.0
@@ -76,3 +76,4 @@ def xrange(n):
         r += step
         yield r
 print(xrange(10))
+'''
