@@ -11,15 +11,25 @@ def gpio_a1():
         time.sleep(1)
 
 def gpio_a2():
+    global value_reg2
     while True:
         value_reg2 = random.randint(0, 1)
         time.sleep(1)
 
-def main():
-    global value_reg1
-    work = threading.Thread(target=gpio_a1)
+def interrupt(pin, efge, isr):
+    while True:
+        pass
+
+def new_task(func):
+    work = threading.Thread(target=func)
     work.daemon = True
     work.start()
+
+def main():
+    global value_reg1
+
+    new_task(gpio_a1)
+    new_task(gpio_a2)
 
     while True:
         value_reg1 = int(input())
