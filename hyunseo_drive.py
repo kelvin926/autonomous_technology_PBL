@@ -14,31 +14,65 @@ def Lidar():
     lidar.connect()
     lidar.startMotor()
     
-    def close():
-        lidar.stopMotor()
-    Lidar.close = close
-
     def _inner(): # lidar scan data
         return lidar.getVectors()
     
     return _inner # data return
 
+def lidar_drive():
+    if lidar_analysis.Analysis_data[0] <= 500 # 전방 감지
+
+
+def lidar_analysis():
+    for v in (on_lidar.Raw_Data):
+        if v[0] >= 335 or v[0] <= 25: # 전방 50도 한정
+            Front_raw = 90000 #debug
+            for i in v[0]:
+                if i <= Front_raw: #최소값 구함
+                    Front_raw = i 
+
+        if v[0] > 25 and v[0] <= 90: # 우측 전방 한정
+            R_front_raw = 90000 #debug
+            for i in v[0]:
+                if i <= R_front_raw: #최소값 구함
+                    R_front_raw = i
+
+        if v[0] > 90 and v[0] <= 155: # 우측 후방
+            R_rear_raw = 90000 #debug
+            for i in v[0]:
+                if i <= R_rear_raw: #최소값 구함
+                    R_rear_raw = i 
+
+        if v[0] > 155 and v[0] <= 205: # 후방
+            Rear_raw = 90000 #debug
+            for i in v[0]:
+                if i <= Rear_raw: #최소값 구함
+                    Rear_raw = i 
+
+        if v[0] > 205 and v[0] <= 270: # 좌측 후방
+            L_rear_raw = 90000 #debug
+            for i in v[0]:
+                if i <= L_rear_raw: #최소값 구함
+                    L_rear_raw = i 
+
+        if v[0] >= 270 and v[0] <= 335: # 좌측 전방
+            L_front_raw = 90000 #debug
+            for i in v[0]:
+                if i <= L_front_raw: #최소값 구함
+                    L_front_raw = i 
+        
+        Analysis_data = [Front_raw, R_front_raw, R_rear_raw, Rear_raw, L_front_raw, L_rear_raw]
+        lidar_drive()
 
 def on_lidar(car, lidar): # lidar data organize
     on_lidar.is_stop = False
 
     while not on_lidar.is_stop:
-        V = lidar() # V에 lidar Raw data 입력.
-        print(V)
-        
-        for v in V:
-            if v[0] >= 360 - 15 or v[0] <= 15:
-                if v[1] <= 500:
-                    Thread(target=car.alarm, args=(4, 8, 1/4)).start()
-                print(v[1])
-
+        Raw_Data = lidar() # V에 lidar Raw data 입력.
+        lidar_analysis()
         time.sleep(0.1)
 # lidar end
+
 
 
 def on_drive(car):
@@ -82,29 +116,19 @@ def on_drive(car):
     car.stop()
 
 
-def on_cmd():
-    while True:
-        on_drive.cmd = int(input())
 
-        if on_drive.cmd > 6:
-            on_drive.is_stop = True
-            break
 
 
 def main():  
     car = Pilot.AutoCar()
-
     Thread(target=on_drive, args=(car, )).start()
-    Thread(target=on_cmd).start()
-    
+
     # lidar
     lidar = Lidar()
     t = Thread(target=on_lidar, args=(car, lidar))
     t.daemon = True
     t.start()
-    # input()
-    # on_lidar.is_stop = True
-    # Lidar.close()
+
 
 
 if __name__ == "__main__":
