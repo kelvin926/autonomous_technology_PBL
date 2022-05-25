@@ -43,31 +43,56 @@ def main():
 
     car = Pilot.AutoCar()
     lidar = Lidar(autocar_width, direction_count) # 자동차 너비, 감지 방향의 수 (8방향 등등) Class Create
-    current_direction = 0
+    current_direction = 0 # 진행 방향 숫자 기본 0.
     flag = True
 
     while flag:
         try:
-            if lidar.collisonDetect(300)[current_direction]:
-                car.stop()
-                continue
+            # if lidar.collisonDetect(300)[current_direction]: # [진행 방향에서 너무 가까운 경우]
+            #     car.stop()
+            #     continue
 
-            detect = lidar.collisonDetect(800)
-
-            if sum(detect) == direction_count:
+            detect = lidar.collisonDetect(800) # detect 리스트에 거리에 따른 장애물 유무 대입
+            new_detect = [detect[0],detect[1],detect[7]]
+            if sum(detect) == direction_count: # [모든 방향이 막혔을 때]
                 car.stop()
                 continue
             
-            if detect[current_direction]:
-                open_directions = [i for i, val in enumerate(detect) if not val]
-                current_direction = random.choice(open_directions)
+            if new_detect[current_direction]: # [해당 방향에 장애물이 있을 때]
+                open_directions = [i for i, val in enumerate(new_detect) if not val] # 열린(장애물 없는) 부분 방향 리스트 제작
+                if 0 in open_directions:
+                    current_direction = 0
+                elif (1, 7) in open_directions:
+                    current_direction = random.choice(1, 7)
+                else:
+                    current_direction = random.choice(open_directions)
+            
+            speed = 50
+            car.setSpeed(speed)
+            if current_direction == 0:
+                car.steering = 0
+                car.forward()
+            elif current_direction == 1:
+                car.forward()
+                car.steering -= 0.2
+                car.steering = - 1.0 if car.steering < -1.0 else car.steering
+            elif current_direction == 7:
+                car.forward()
+                car.steering += 0.2
+                car.steering = 1.0 if car.steering > 1.0 else car.steering
+            else:
+                if ((detect[0] == 1) & (detect[1] == 1) & (detect[7] == 0)):
+                    car.backward()
+                    car.steering -= 0.2
+                    car.steering = - 1.0 if car.steering < -1.0 else car.steering
+                else:
+                    car.forward()
+            
+            
+            print(detect) # 장애물 감지 리스트 출력
+            print(current_direction) # 진행방향 출력
 
-            """TODO
-                car.steering = ? current_direction
-            """
-            print(detect)
-
-        except (KeyboardInterrupt, SystemError):
+        except (KeyboardInterrupt, SystemError): # 컨트롤C나 시스템 오류가 발생할 때, Flag를 False로 변경하여 무한반복 벗어남.
             flag = False
     
     car.stop()
