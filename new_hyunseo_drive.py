@@ -7,30 +7,30 @@ import random
 class Lidar:
     def __init__(self, width, directions):
         self.autocar_width = width
-        self.degrees = list(range(0, 360, 360 // directions))
+        self.degrees = list(range(0, 360, 360 // directions)) # 0 ~ 360도를 directions 개수로 쪼개서 list 만듦.
 
-        self.lidar = LiDAR.Rplidar()
+        self.lidar = LiDAR.Rplidar() # 라이다 게시
         self.lidar.connect()
         self.lidar.startMotor()
 
     def __del__(self):
-        self.lidar.stopMotor()
+        self.lidar.stopMotor() # 클래스 끝날 때 모터 정지.
 
     def calcAngle(self, length):
         tan = (self.autocar_width / 2) / length
         angle = math.atan(tan) * (180 / math.pi)
-        return angle
+        return angle # 차가 턴할 수 있는 최적 각도 구함
 
     def collisonDetect(self, length):
-        detect = [0] * len(self.degrees)
-        angle = self.calcAngle(length)
+        detect = [0] * len(self.degrees) # 감지 방향에 따른 2차 배열 준비.
+        angle = self.calcAngle(length) # 턴 가능 각도 
         ret = self.lidar.getVectors() # Raw Data
         for degree, distance, _ in ret: # 각도, 거리, 감도
-            for i, detect_direction in enumerate(self.degrees):
-                min_degree = (detect_direction - angle) % 360
-                if (degree + (360 - min_degree)) % 360 <= (angle * 2):
+            for i, detect_direction in enumerate(self.degrees): # 각도별 리스트 넣음.
+                min_degree = (detect_direction - angle) % 360 # 해당 구역의 최소 앵글부터
+                if (degree + (360 - min_degree)) % 360 <= (angle * 2): # 해당 구역의 최대 앵글까지 반복
                     if distance < length:
-                        detect[i] = 1
+                        detect[i] = 1 # 해당 구역에 object 있음
                         break
         return detect
 
