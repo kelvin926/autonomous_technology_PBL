@@ -33,7 +33,6 @@ class Lidar:
                         detect[i] = 1 # 해당 구역에 object 있음
                         break
         return detect
-
 print("Start AutoCar!!!")
 
 def main():
@@ -53,7 +52,8 @@ def main():
             #     continue
 
             detect = lidar.collisonDetect(800) # detect 리스트에 거리에 따른 장애물 유무 대입
-            new_detect = [detect[0],detect[1],detect[7]]
+            new_detect = [detect[0],detect[1],detect[7]] # 전, 우전, 좌전
+            
             if sum(detect) == direction_count: # [모든 방향이 막혔을 때]
                 car.stop()
                 continue
@@ -62,10 +62,10 @@ def main():
                 open_directions = [i for i, val in enumerate(new_detect) if not val] # 열린(장애물 없는) 부분 방향 리스트 제작
                 if 0 in open_directions:
                     current_direction = 0
-                elif (1, 7) in open_directions:
-                    current_direction = random.choice(1, 7)
+                elif (1 in open_directions)|(7 in open_directions):
+                    current_direction = random.choice([1,7])
                 else:
-                    current_direction = random.choice(open_directions)
+                    current_direction = 0
             
             speed = 50
             car.setSpeed(speed)
@@ -81,7 +81,7 @@ def main():
                 car.steering += 0.2
                 car.steering = 1.0 if car.steering > 1.0 else car.steering
             else:
-                if ((detect[0] == 1) & (detect[1] == 1) & (detect[7] == 0)):
+                if ((detect[0] == 1) & (detect[1] == 1) & (detect[7] == 1)):
                     car.backward()
                     car.steering -= 0.2
                     car.steering = - 1.0 if car.steering < -1.0 else car.steering
