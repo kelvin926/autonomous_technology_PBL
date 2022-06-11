@@ -36,34 +36,31 @@ def on_lidar(car, lidar):
                     print("왼쪽으로 회전 ", v[1])          #디버깅을 위해 print문 작성
                     print("왼쪽 조향값 ", car.steering)
                     
-                       
-            elif v[0] >= 360 - 50 or v[0] <= 50:          #전방 100도 확인
- 
-                if v[0] <= 50 :                            #전방 우측 50도 우선 확인                                               
+            elif v[0] >= 360 - 50 or v[0] <= 50:          #중복적으로 전방 100도 확인
+                if v[0]>=355 and v[0]<=5 : # 극전방 확인
+                    if v[1] <= 500 : # 앞에 장애물이 가까이 있음.
+                        car.backward() # 후진
+                        on_drive.cmd = 33 # 좌측으로 크게 후진
+                        time.sleep(1) # 1초동안 유지
+                        car.forward() # 전진
+                        while(car.steering < 0): #왼쪽으로 치우쳐져 있는 조향값을 0으로 복원시키는 코드
+                            on_drive.cmd = 4
+
+                if v[0] <= 50 :                            #전방 우측 50도 '우선' 확인                                               
                     if v[1] <= 1150 :                     #전방 우측 50도 1.5m를 스캔후 물체가 있을경우
-                        #Thread(target=car.alarm, args=(4, 8, 1/4)).start()
                         on_drive.cmd = 3                  #3번 커맨드를 통해 좌측으로 이동 
                         
-                        
-
                     if v[1] > 1150 :                      #전방 우측 50도 1.5m 스캔후 물체가 없을경우
                         while(car.steering < 0) :         #왼쪽으로 치우쳐져 있는 조향값을 0으로 복원시키는 코드
                             on_drive.cmd = 4              #중앙을 넘어가지않도록 왼쪽에서 오른쪽 조향
-
-                
-
+                            
                 if v[0] >= 360 - 50 :                   #전방 좌측 50도 이후 확인 
                     if v[1] <= 1150 :                     #전방 좌측 50도 1.5m를 스캔후 물체가 있을경우
-                        #Thread(target=car.alarm, args=(4, 8, 1/4)).start()
                         on_drive.cmd = 4                  #4번 커맨드를 통해 우측으로 이동 
                         
-                        
-
                     if v[1] > 1150 :                      #전방 좌측 50도 1.5m 스캔후 물체가 없을경우
                         while(car.steering > 0) :         #오른쪽으로 치우쳐져 있는 조향값을 0으로 복원시키는 코드
                             on_drive.cmd = 3              #중앙을 넘어가지않도록 오른쪽에서 왼쪽 조향
-                            
-                            
                             
         time.sleep(0.1)                                   #조향값을 0.1초동안 유지
 
@@ -142,7 +139,6 @@ def main():
     Lidar.close()
     car.stop()
 
-    
 
 if __name__ == "__main__":
     main()
