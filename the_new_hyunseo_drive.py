@@ -30,7 +30,7 @@ def on_lidar(car, lidar):
         # if, elif문을 사용하여 
 
         for v in V:
-            if v[0] >= 360 - 100 and v[0] <= 360 - 65:     #우선적으로 좌측의 라이다 값을 받아온다  (260도~290도)          
+            if v[0] >= 360 - 80 and v[0] <= 360 - 40:     #우선적으로 좌측의 라이다 값을 받아온다  (260도~290도)          
                 if v[1] >= 2300 and v[1] <= 3500:         #귀납적으로 첫번째 회전시 자동차와 벽장의 거리를 측정한뒤 그 거리에서만 회전할수 있게 값을 조정한다
                     on_drive.cmd = 33                     #커맨드 33은 더 강하게 좌회전하는 명령
                     print("왼쪽으로 회전 ", v[1])          #디버깅을 위해 print문 작성
@@ -83,13 +83,12 @@ def on_drive(car):
             car.backward()
         elif on_drive.cmd == 3:               #왼쪽
             steering -= 0.5
-            steering = -1.0 if steering < -1.0 else steering
+            steering = -1.0 if steering <= -1.0 else steering
             car.steering = steering
 
         elif on_drive.cmd == 33 :            #더강하게 왼쪽으로 틀기
             steering -= 1.0
-
-            steering = -1.0 if steering < -1.0 else steering
+            steering = -1.0 if steering <= -1.0 else steering
             car.steering = steering
             print("강한회전")
             
