@@ -3,6 +3,7 @@ from pop import LiDAR
 from threading import Thread
 import time
 
+number = 0
 
 def Lidar():
     lidar = LiDAR.Rplidar()
@@ -20,32 +21,36 @@ def Lidar():
     return _inner
 
 
+def first_turn(car):
+    car.setSpeed(100)
+    car.steering = 0
+    time.sleep(2)
+    car.steering = -1
+    time.sleep(1)
+    car.steering = 0
+    car.setSpeed(75)
+
 def on_lidar(car, lidar):
     on_lidar.is_stop = False
-    
 
     while not on_lidar.is_stop:
         V = lidar()
         #라이다를 실행시킨후 좌, 우, 전방 순으로 물체를 확인한다
         # if, elif문을 사용하여 
-
         for v in V:
-            if v[0] >= 360 - 80 and v[0] <= 360 - 40:     #우선적으로 좌측의 라이다 값을 받아온다  (260도~290도)          
+            if v[0] >= 360 - 100 and v[0] <= 360 - 65:     #우선적으로 좌측의 라이다 값을 받아온다  (260도~290도)          
                 if v[1] >= 2300 and v[1] <= 3500:         #귀납적으로 첫번째 회전시 자동차와 벽장의 거리를 측정한뒤 그 거리에서만 회전할수 있게 값을 조정한다
-                    on_drive.cmd = 33                     #커맨드 33은 더 강하게 좌회전하는 명령
-                    print("왼쪽으로 회전 ", v[1])          #디버깅을 위해 print문 작성
-                    print("왼쪽 조향값 ", car.steering)
-                    
+                    global number
+                    if number == 0:
+                        first_turn(car)
+                        number = 1
+                        print("왼쪽 턴")
+                    else:
+                        on_drive.cmd = 33                     #커맨드 33은 더 강하게 좌회전하는 명령
+                        print("왼쪽으로 회전 ", v[1])          #디버깅을 위해 print문 작성
+                        print("왼쪽 조향값 ", car.steering)
+                        
             elif v[0] >= 360 - 50 or v[0] <= 50:          #중복적으로 전방 100도 확인
-                if v[0]>=355 and v[0]<=5 : # 극전방 확인
-                    if v[1] <= 500 : # 앞에 장애물이 가까이 있음.
-                        car.backward() # 후진
-                        on_drive.cmd = 33 # 좌측으로 크게 후진
-                        time.sleep(1) # 1초동안 유지
-                        car.forward() # 전진
-                        while(car.steering < 0): #왼쪽으로 치우쳐져 있는 조향값을 0으로 복원시키는 코드
-                            on_drive.cmd = 4
-
                 if v[0] <= 50 :                            #전방 우측 50도 '우선' 확인                                               
                     if v[1] <= 1150 :                     #전방 우측 50도 1.5m를 스캔후 물체가 있을경우
                         on_drive.cmd = 3                  #3번 커맨드를 통해 좌측으로 이동 
@@ -121,7 +126,7 @@ def on_drive(car):
     car.stop()
 
 
-def main():  
+def main():
     car = Pilot.AutoCar()
     lidar = Lidar()
 
